@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌐 Hex Translator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    :root {
+      --bg1: #0f172a;
+      --bg2: #1e293b;
+      --accent: #3b82f6;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #020617, #0f172a, #1e293b);
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    .glow {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(59,130,246,0.3), transparent 70%);
+      filter: blur(100px);
+      z-index: 0;
+      animation: float 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes float {
+      from { transform: translate(0, 0); }
+      to { transform: translate(50px, 50px); }
+    }
+
+    .container {
+      position: relative;
+      background: rgba(30, 41, 59, 0.9);
+      border-radius: 20px;
+      padding: 25px 30px;
+      width: 90%;
+      max-width: 750px;
+      box-shadow: 0 0 40px rgba(59, 130, 246, 0.2);
+      z-index: 1;
+      backdrop-filter: blur(10px);
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 28px;
+      color: var(--accent);
+      text-shadow: 0 0 10px rgba(59,130,246,0.5);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 10px;
+      border: none;
+      border-radius: 12px;
+      background: #0b1220;
+      color: var(--text);
+      font-size: 16px;
+      resize: vertical;
+      margin-top: 10px;
+    }
+
+    select, button {
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+    }
+
+    select {
+      background: #0b1220;
+      color: var(--text);
+      width: 100%;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin: 15px 0;
+    }
+
+    .swap {
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .swap:hover { opacity: 0.8; transform: rotate(180deg); }
+
+    .translate-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: 0.3s;
+    }
+    .translate-btn:hover {
+      background: #2563eb;
+      transform: scale(1.03);
+    }
+
+    .output {
+      background: #0b1220;
+      padding: 10px;
+      border-radius: 10px;
+      min-height: 100px;
+      margin-top: 15px;
+      white-space: pre-wrap;
+      position: relative;
+    }
+
+    .footer {
+      margin-top: 15px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .copy-btn, .speak-btn, .mic-btn {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-left: 8px;
+      transition: 0.3s;
+    }
+    .copy-btn:hover, .speak-btn:hover, .mic-btn:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 6px;
+    }
+
+    .brand {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="glow" style="top:10%; left:10%;"></div>
+  <div class="glow" style="bottom:10%; right:10%;"></div>
+
+  <div class="container">
+    <h1>💠 Hex Translator</h1>
+
+    <div class="buttons">
+      <button id="micBtn" class="mic-btn">🎙️ Speak</button>
+    </div>
+
+    <textarea id="inputText" placeholder="Type or speak text here..."></textarea>
+
+    <div class="controls">
+      <select id="fromLang"></select>
+      <button id="swap" class="swap">⇄</button>
+      <select id="toLang"></select>
+    </div>
+
+    <button id="translateBtn" class="translate-btn">Translate</button>
+
+    <div class="output" id="outputText">
+      <div class="buttons">
+        <button id="copyBtn" class="copy-btn">Copy</button>
+        <button id="speakBtn" class="speak-btn">🔊 Speak</button>
+      </div>
+      <p id="result">Translation will appear here...</p>
+    </div>
+
+    <div class="brand">🌐 Powered by Hex Translator</div>
+  </div>
+
+  <script>
+    const fromLang = document.getElementById("fromLang");
+    const toLang = document.getElementById("toLang");
+    const translateBtn = document.getElementById("translateBtn");
+    const inputText = document.getElementById("inputText");
+    const result = document.getElementById("result");
+    const swapBtn = document.getElementById("swap");
+    const copyBtn = document.getElementById("copyBtn");
+    const speakBtn = document.getElementById("speakBtn");
+    const micBtn = document.getElementById("micBtn");
+
+    const languages = {
+      en: "English",
+      hi: "Hindi",
+      es: "Spanish",
+      fr: "French",
+      de: "German",
+      it: "Italian",
+      ja: "Japanese",
+      ko: "Korean",
+      zh: "Chinese",
+      ru: "Russian",
+      ar: "Arabic",
+      bn: "Bengali",
+      pt: "Portuguese",
+      ur: "Urdu",
+      tr: "Turkish"
+    };
+
+    for (let code in languages) {
+      let option1 = document.createElement("option");
+      let option2 = document.createElement("option");
+      option1.value = code;
+      option2.value = code;
+      option1.textContent = languages[code];
+      option2.textContent = languages[code];
+      fromLang.appendChild(option1);
+      toLang.appendChild(option2);
+    }
+
+    fromLang.value = "en";
+    toLang.value = "hi";
+
+    async function translate() {
+      const text = inputText.value.trim();
+      if (!text) {
+        result.textContent = "Please enter some text to translate.";
+        return;
+      }
+      result.textContent = "Translating...";
+      const from = fromLang.value;
+      const to = toLang.value;
+      try {
+        const res = await fetch(
+          `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
+            text
+          )}&langpair=${from}|${to}`
+        );
+        const data = await res.json();
+        if (data.responseData.translatedText) {
+          result.textContent = data.responseData.translatedText;
+        } else {
+          result.textContent = "Translation failed.";
+        }
+      } catch (err) {
+        result.textContent = "Error: " + err.message;
+      }
+    }
+
+    translateBtn.addEventListener("click", translate);
+
+    swapBtn.addEventListener("click", () => {
+      const temp = fromLang.value;
+      fromLang.value = toLang.value;
+      toLang.value = temp;
+      const tempText = inputText.value;
+      inputText.value = result.textContent !== "Translation will appear here..."
+        ? result.textContent
+        : tempText;
+      result.textContent = "Translation will appear here...";
+    });
+
+    copyBtn.addEventListener("click", () => {
+      navigator.clipboard.writeText(result.textContent);
+      copyBtn.textContent = "Copied!";
+      setTimeout(() => (copyBtn.textContent = "Copy"), 1500);
+    });
+
+    speakBtn.addEventListener("click", () => {
+      const speech = new SpeechSynthesisUtterance(result.textContent);
+      speech.lang = toLang.value;
+      window.speechSynthesis.speak(speech);
+    });
+
+    micBtn.addEventListener("click", () => {
+      if (!('webkitSpeechRecognition' in window)) {
+        alert("Speech recognition not supported in this browser.");
+        return;
+      }
+      const recognition = new webkitSpeechRecognition();
+      recognition.lang = fromLang.value;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      recognition.start();
+
+      recognition.onresult = (event) => {
+        inputText.value = event.results[0][0].transcript;
+      };
+      recognition.onerror = () => alert("Voice input error. Try again.");
+    });
+  </script>
+</body>
+</html>
